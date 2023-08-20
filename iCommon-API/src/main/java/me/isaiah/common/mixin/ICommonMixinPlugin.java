@@ -17,6 +17,7 @@ import me.isaiah.common.GameVersion;
 import me.isaiah.common.cmixin.MixinList;
 import me.isaiah.common.event.EventRegistery;
 import me.isaiah.common.event.ShouldApplyMixinEvent;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.MinecraftVersion;
 import net.minecraft.util.JsonHelper;
 
@@ -42,7 +43,7 @@ public class ICommonMixinPlugin implements IMixinConfigPlugin {
         }
         return GameVersion.INSTANCE;
     }
-    
+
     /*
      */
     public static GameVersion create() {
@@ -69,7 +70,7 @@ public class ICommonMixinPlugin implements IMixinConfigPlugin {
 
         return shouldApply(mixinClassName, "1");
     }
-    
+
     public boolean shouldApply(String mixinClassName, String output) {
         String mixin = mixinClassName.substring(MIXIN_PACKAGE_ROOT.length()).trim();
 
@@ -78,6 +79,7 @@ public class ICommonMixinPlugin implements IMixinConfigPlugin {
         boolean sev = relTar.startsWith("1.17");
         boolean r8  = relTar.startsWith("1.18");
         boolean r9  = relTar.startsWith("1.19");
+		boolean r20 = relTar.startsWith("1.20");
 
         if (mixin.length() < 7 || mixin.startsWith("RALL") || mixin.startsWith("R.") || mixin.contains("MCVER") || mixin.equalsIgnoreCase("R1_16.Mixin")
                 || (mixin.contains("R1_") && mixin.length() < 12)) {
@@ -89,6 +91,15 @@ public class ICommonMixinPlugin implements IMixinConfigPlugin {
 
         if (ev.isCanceled()) {
             return false;
+        }
+        
+        boolean has_lithium = FabricLoader.getInstance().isModLoaded("lithium");
+
+        if (mixin.contains("CampfireBlockEntity")) {
+        	if (has_lithium) {
+        		logger.info("Lithium detected");
+        		return false;
+        	}
         }
 
         if (mixin.contains("1_16")) {
@@ -112,6 +123,12 @@ public class ICommonMixinPlugin implements IMixinConfigPlugin {
             if (r9)
                 logger.info("Applying mixin: " + mixin + "...");
             return r9;
+        }
+
+        if (mixin.contains("1_20")) {
+            if (r20)
+                logger.info("Applying mixin: " + mixin + "...");
+            return r20;
         }
 
         logger.info("Applying mixin: " + mixin + "...");
